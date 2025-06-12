@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vietnam Stock Valuation Tool</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="container">
+                <div class="flex justify-between items-center py-16">
+                    <h1 class="app-title">Vietnam Stock Valuation</h1>
+                    <div class="theme-toggle">
+                        <button id="theme-toggle-btn" class="btn btn--secondary btn--sm" aria-label="Toggle theme">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="app-main">
+            <div class="container">
+                <!-- Search and Company Selection -->
+                <div class="search-section card mb-8">
+                    <div class="card__body">
+                        <div class="flex flex-col gap-16">
+                            <div class="flex justify-between items-center">
+                                <h3>Stock Symbol Search</h3>
+                                <div class="period-selector">
+                                    <label class="form-label m-0 mr-8">Data Period:</label>
+                                    <select id="period-select" class="form-control">
+                                        <option value="annual">Annual</option>
+                                        <option value="quarterly">Quarterly</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="flex gap-8 search-form">
+                                <div class="search-input-wrapper">
+                                    <input type="text" id="stock-symbol" class="form-control" placeholder="Enter stock symbol (VCB, FPT, VNM...)" list="stock-suggestions">
+                                    <datalist id="stock-suggestions">
+                                        <option value="VCB">Vietcombank</option>
+                                        <option value="FPT">FPT Corporation</option>
+                                        <option value="VNM">Vinamilk</option>
+                                    </datalist>
+                                </div>
+                                <button id="load-data-btn" class="btn btn--primary">Load Company Data</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Messages -->
+                <div id="status-message" class="status-message hidden"></div>
+
+                <!-- Tab Navigation -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="overview">Company Overview</button>
+                    <button class="tab-btn" data-tab="valuation">Valuation & Assumptions</button>
+                    <button class="tab-btn" data-tab="summary">Summary Report</button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <!-- Overview Tab -->
+                    <div id="overview" class="tab-pane active">
+                        <div class="overview-content">
+                            <!-- Company Info -->
+                            <div class="company-info card mb-8">
+                                <div class="card__header">
+                                    <h3 id="company-name">Company Information</h3>
+                                </div>
+                                <div class="card__body">
+                                    <div class="company-details">
+                                        <div class="info-row">
+                                            <span class="info-label">Symbol:</span>
+                                            <span id="company-symbol" class="info-value">--</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">Industry:</span>
+                                            <span id="company-sector" class="info-value">--</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">Exchange:</span>
+                                            <span id="company-exchange" class="info-value">--</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Market Data -->
+                            <div class="market-data card mb-8">
+                                <div class="card__header">
+                                    <h3>Market Data</h3>
+                                </div>
+                                <div class="card__body">
+                                    <div class="metrics-grid">
+                                        <div class="metric-card">
+                                            <div class="metric-title">Current Price</div>
+                                            <div id="current-price" class="metric-value">--</div>
+                                        </div>
+                                        <div class="metric-card">
+                                            <div class="metric-title">Market Cap</div>
+                                            <div id="market-cap" class="metric-value">--</div>
+                                        </div>
+                                        <div class="metric-card">
+                                            <div class="metric-title">P/E Ratio</div>
+                                            <div id="pe-ratio" class="metric-value">--</div>
+                                        </div>
+                                        <div class="metric-card">
+                                            <div class="metric-title">P/B Ratio</div>
+                                            <div id="pb-ratio" class="metric-value">--</div>
+                                        </div>
+                                        <div class="metric-card">
+                                            <div class="metric-title">P/S Ratio</div>
+                                            <div id="ps-ratio" class="metric-value">--</div>
+                                        </div>
+                                        <div class="metric-card">
+                                            <div class="metric-title">EPS</div>
+                                            <div id="eps" class="metric-value">--</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Financial Metrics -->
+                            <div class="financial-metrics card">
+                                <div class="card__header">
+                                    <h3>Financial Metrics</h3>
+                                </div>
+                                <div class="card__body">
+                                    <div class="metrics-grid">
+                                        <div class="metric-card">
+                                            <div class="metric-title">Revenue</div>
+                                            <div id="revenue" class="metric-value">--</div>
+                                        </div>
+                                        <div class="metric-card">
+                                            <div class="metric-title">Net Income</div>
+                                            <div id="net-income" class="metric-value">--</div>
+                                        </div>
+                                        <div class="metric-card">
+                                            <div class="metric-title">EBITDA</div>
+                                            <div id="ebitda" class="metric-value">--</div>
+                                        </div>
+                                        <div class="metric-card">
+                                            <div class="metric-title">ROE (%)</div>
+                                            <div id="roe" class="metric-value">--</div>
+                                        </div>
+                                        <div class="metric-card">
+                                            <div class="metric-title">ROA (%)</div>
+                                            <div id="roa" class="metric-value">--</div>
+                                        </div>
+                                        <div class="metric-card">
+                                            <div class="metric-title">Debt/Equity</div>
+                                            <div id="debt-equity" class="metric-value">--</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Valuation Tab -->
+                    <div id="valuation" class="tab-pane">
+                        <div class="valuation-content">
+                            <!-- Assumptions Section -->
+                            <div class="assumptions-section card mb-8">
+                                <div class="card__header">
+                                    <h3>Model Assumptions</h3>
+                                </div>
+                                <div class="card__body">
+                                    <form id="assumptions-form">
+                                        <div class="form-grid">
+                                            <div class="form-group">
+                                                <label for="revenue-growth" class="form-label">Revenue Growth (%)</label>
+                                                <input type="number" id="revenue-growth" class="form-control" value="8.0" step="0.1">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="terminal-growth" class="form-label">Terminal Growth (%)</label>
+                                                <input type="number" id="terminal-growth" class="form-control" value="3.0" step="0.1">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="wacc" class="form-label">WACC (%)</label>
+                                                <input type="number" id="wacc" class="form-control" value="10.5" step="0.1">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="required-return" class="form-label">Required Return (%)</label>
+                                                <input type="number" id="required-return" class="form-control" value="12.0" step="0.1">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="tax-rate" class="form-label">Tax Rate (%)</label>
+                                                <input type="number" id="tax-rate" class="form-control" value="20.0" step="0.1">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="projection-years" class="form-label">Projection Years</label>
+                                                <input type="number" id="projection-years" class="form-control" value="5" min="1" max="10">
+                                            </div>
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="button" id="calculate-btn" class="btn btn--primary">Calculate Valuation</button>
+                                            <button type="button" id="reset-assumptions-btn" class="btn btn--secondary">Reset Assumptions</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- Model Weights Section -->
+                            <div class="model-weights-section card mb-8">
+                                <div class="card__header">
+                                    <div class="flex justify-between items-center">
+                                        <h3>Model Weights</h3>
+                                        <button id="normalize-weights-btn" class="btn btn--secondary btn--sm">Normalize</button>
+                                    </div>
+                                </div>
+                                <div class="card__body">
+                                    <div class="weight-sliders">
+                                        <div class="weight-slider-group">
+                                            <div class="flex justify-between items-center">
+                                                <label for="dcf-weight" class="weight-label">DCF (FCFF)</label>
+                                                <span id="dcf-weight-value">50%</span>
+                                            </div>
+                                            <input type="range" id="dcf-weight" class="weight-slider" min="0" max="100" value="50">
+                                        </div>
+                                        <div class="weight-slider-group">
+                                            <div class="flex justify-between items-center">
+                                                <label for="fcfe-weight" class="weight-label">FCFE</label>
+                                                <span id="fcfe-weight-value">50%</span>
+                                            </div>
+                                            <input type="range" id="fcfe-weight" class="weight-slider" min="0" max="100" value="50">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Valuation Results -->
+                            <div class="valuation-results card">
+                                <div class="card__header">
+                                    <h3>Valuation Results</h3>
+                                </div>
+                                <div class="card__body">
+                                    <div class="results-grid">
+                                        <div class="result-card">
+                                            <div class="result-title">DCF (FCFF)</div>
+                                            <div id="dcf-result" class="result-value">--</div>
+                                            <div id="dcf-diff" class="result-diff">--</div>
+                                        </div>
+                                        <div class="result-card">
+                                            <div class="result-title">FCFE</div>
+                                            <div id="fcfe-result" class="result-value">--</div>
+                                            <div id="fcfe-diff" class="result-diff">--</div>
+                                        </div>
+                                        <div class="result-card highlight">
+                                            <div class="result-title">Weighted Average</div>
+                                            <div id="weighted-result" class="result-value">--</div>
+                                            <div id="weighted-diff" class="result-diff">--</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="recommendation-box">
+                                        <h4>Investment Recommendation</h4>
+                                        <div id="recommendation" class="recommendation">
+                                            <span class="status status--info">Waiting for data</span>
+                                        </div>
+                                        <div id="potential-return" class="potential-return">
+                                            Potential Return: <span id="return-value">--</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary Tab -->
+                    <div id="summary" class="tab-pane">
+                        <div class="summary-content">
+                            <!-- Valuation Summary -->
+                            <div class="valuation-summary card mb-8">
+                                <div class="card__header">
+                                    <h3>Valuation Summary</h3>
+                                </div>
+                                <div class="card__body">
+                                    <div class="summary-grid">
+                                        <div class="summary-section">
+                                            <h4>Company Information</h4>
+                                            <div class="summary-table">
+                                                <div class="summary-row">
+                                                    <div class="summary-label">Stock Symbol:</div>
+                                                    <div id="summary-symbol" class="summary-value">--</div>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <div class="summary-label">Company Name:</div>
+                                                    <div id="summary-name" class="summary-value">--</div>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <div class="summary-label">Industry:</div>
+                                                    <div id="summary-sector" class="summary-value">--</div>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <div class="summary-label">Exchange:</div>
+                                                    <div id="summary-exchange" class="summary-value">--</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="summary-section">
+                                            <h4>Market Indicators</h4>
+                                            <div class="summary-table">
+                                                <div class="summary-row">
+                                                    <div class="summary-label">Current Price:</div>
+                                                    <div id="summary-price" class="summary-value">--</div>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <div class="summary-label">Market Cap:</div>
+                                                    <div id="summary-market-cap" class="summary-value">--</div>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <div class="summary-label">P/E:</div>
+                                                    <div id="summary-pe" class="summary-value">--</div>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <div class="summary-label">P/B:</div>
+                                                    <div id="summary-pb" class="summary-value">--</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Valuation Models Detail -->
+                            <div class="valuation-models card mb-8">
+                                <div class="card__header">
+                                    <h3>Model Details</h3>
+                                </div>
+                                <div class="card__body">
+                                    <div class="models-detail">
+                                        <div class="model-detail-section">
+                                            <h4>DCF (FCFF)</h4>
+                                            <div class="summary-table">
+                                                <div class="summary-row">
+                                                    <div class="summary-label">Enterprise Value (EV):</div>
+                                                    <div id="dcf-ev" class="summary-value">--</div>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <div class="summary-label">Equity Value:</div>
+                                                    <div id="dcf-equity" class="summary-value">--</div>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <div class="summary-label">Share Value:</div>
+                                                    <div id="dcf-share-value" class="summary-value">--</div>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <div class="summary-label">Difference vs Market:</div>
+                                                    <div id="dcf-market-diff" class="summary-value">--</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="model-detail-section">
+                                            <h4>FCFE</h4>
+                                            <div class="summary-table">
+                                                <div class="summary-row">
+                                                    <div class="summary-label">Equity Value:</div>
+                                                    <div id="fcfe-equity" class="summary-value">--</div>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <div class="summary-label">Share Value:</div>
+                                                    <div id="fcfe-share-value" class="summary-value">--</div>
+                                                </div>
+                                                <div class="summary-row">
+                                                    <div class="summary-label">Difference vs Market:</div>
+                                                    <div id="fcfe-market-diff" class="summary-value">--</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Final Recommendation -->
+                            <div class="final-recommendation card">
+                                <div class="card__header">
+                                    <h3>Conclusion and Recommendation</h3>
+                                </div>
+                                <div class="card__body">
+                                    <div class="recommendation-details">
+                                        <div class="recommendation-summary">
+                                            <div class="summary-row">
+                                                <div class="summary-label">Target Price:</div>
+                                                <div id="target-price" class="summary-value highlight">--</div>
+                                            </div>
+                                            <div class="summary-row">
+                                                <div class="summary-label">Upside/Downside Potential:</div>
+                                                <div id="summary-potential" class="summary-value">--</div>
+                                            </div>
+                                            <div class="summary-row">
+                                                <div class="summary-label">Confidence Level:</div>
+                                                <div id="confidence-level" class="summary-value">--</div>
+                                            </div>
+                                        </div>
+
+                                        <div class="recommendation-box-large">
+                                            <h4>Recommendation</h4>
+                                            <div id="final-recommendation" class="final-recommendation-status">
+                                                <span class="status status--info">Waiting for data</span>
+                                            </div>
+                                            <p id="recommendation-reasoning" class="recommendation-reasoning">
+                                                Please load company data and perform valuation calculations to receive investment recommendations.
+                                            </p>
+                                        </div>
+
+                                        <div class="export-actions">
+                                            <button id="export-report-btn" class="btn btn--primary" disabled>Export PDF Report</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="app-footer">
+            <div class="container">
+                <div class="py-16">
+                    <p class="text-center">© 2025 Vietnam Stock Valuation. Data provided for reference purposes only.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'94ea8ce2fb680707',t:'MTc0OTc0MzkxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
